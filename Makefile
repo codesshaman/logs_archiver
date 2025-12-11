@@ -17,7 +17,7 @@ USER_ID = $(shell id -u)
 
 all:
 	@printf "Launch configuration ${name}...\n"
-	@docker-compose -f ./docker-compose.yml up -d
+	@./scripts/01_get_global_list.sh ./test_dir/ | ./scripts/02_send_dirs_to_remover.sh
 
 help:
 	@echo -e "$(OK_COLOR)==== All commands of ${name} configuration ====$(NO_COLOR)"
