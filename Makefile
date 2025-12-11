@@ -1,4 +1,4 @@
-name = ADCM
+name = Logs archiver
 
 NO_COLOR=\033[0m	# Color Reset
 COLOR_OFF='\e[0m'       # Color Off
@@ -19,105 +19,25 @@ all:
 	@printf "Launch configuration ${name}...\n"
 	@./scripts/01_get_global_list.sh ./test_dir/ | ./scripts/02_send_dirs_to_remover.sh
 
-help:
-	@echo -e "$(OK_COLOR)==== All commands of ${name} configuration ====$(NO_COLOR)"
-	@echo -e "$(WARN_COLOR)- make				: Launch configuration"
-	@echo -e "$(WARN_COLOR)- make build			: Building configuration"
-	@echo -e "$(WARN_COLOR)- make conn			: Connect to adcm container"
-	@echo -e "$(WARN_COLOR)- make conpos			: Connect to postgres container"
-	@echo -e "$(WARN_COLOR)- make git                      : Set user and mail for git"
-	@echo -e "$(WARN_COLOR)- make down			: Stopping configuration"
-	@echo -e "$(WARN_COLOR)- make down			: Change script format"
-	@echo -e "$(WARN_COLOR)- make env			: Create .env file"
-	@echo -e "$(WARN_COLOR)- make migrate			: Create migrations"
-	@echo -e "$(WARN_COLOR)- make ps			: View configuration"
-	@echo -e "$(WARN_COLOR)- make push			: Push changes to the github"
-	@echo -e "$(WARN_COLOR)- make re			: Rebuild configuration"
-	@echo -e "$(WARN_COLOR)- make read			: Restart adcm only"
-	@echo -e "$(WARN_COLOR)- make repg			: Restart postgres only"
-	@echo -e "$(WARN_COLOR)- make clean			: Cleaning configuration$(NO_COLOR)"
-
-build:
-	@printf "$(YELLOW)==== Building configuration ${name}... ====$(NO_COLOR)\n"
-	@bash scripts/rm-gitkeep.sh
-	@docker-compose -f ./docker-compose.yml up -d --build
-
-conn:
-	@printf "$(ERROR_COLOR)==== Connect to dash container... ====$(NO_COLOR)\n"
-	@docker exec -it adcm bash
-
-conpos:
-	@printf "$(ERROR_COLOR)==== Connect to postgres container... ====$(NO_COLOR)\n"
-	@docker exec -it postgres sh
-
-git:
-	@printf "$(YELLOW)==== Set user name and email to git for ${name} repo... ====$(NO_COLOR)\n"
-	@bash scripts/gituser.sh
-
-down:
-	@printf "$(ERROR_COLOR)==== Stopping configuration ${name}... ====$(NO_COLOR)\n"
-	@docker-compose -f ./docker-compose.yml down
-
-dump:
-	@printf "$(ERROR_COLOR)==== Change dump script format... ====$(NO_COLOR)\n"
-	@/usr/bin/dos2unix ./dump/init-db.sh
-
 env:
 	@printf "$(ERROR_COLOR)==== Create environment file for ${name}... ====$(NO_COLOR)\n"
 	@if [ -f .env ]; then \
-		rm .env; \
-	fi; \
-	cp .env.example .env
+		echo "$(ERROR_COLOR).env file already exists!$(NO_COLOR)"; \
+	else \
+		cp .env.example .env; \
+		echo "$(GREEN).env file successfully created!$(NO_COLOR)"; \
+	fi
+
 
 git:
 	@printf "$(YELLOW)==== Set user name and email to git for ${name} repo... ====$(NO_COLOR)\n"
 	@bash scripts/gituser.sh
-
-logpos:
-	@printf "$(YELLOW)==== postgres logs... ====$(NO_COLOR)\n"
-	@docker logs postgres
-
-logs:
-	@printf "$(YELLOW)==== ${name} logs... ====$(NO_COLOR)\n"
-	@docker logs adcm
-
-migrate:
-	@printf "$(YELLOW)==== Make ${name} migrations ====$(NO_COLOR)\n"
-	@bash scripts/migrate.sh
 
 push:
 	@bash scripts/push.sh
 
-re:
-	@printf "Rebuild the configuration ${name}...\n"
-	@docker-compose -f ./docker-compose.yml down
-	@docker-compose -f ./docker-compose.yml up -d --build
+service:
+	@bash scripts/create_service.sh
 
-read:
-	@printf "Rebuild adcm...\n"
-	@docker-compose -f ./docker-compose.yml down adcm
-	@docker-compose -f ./docker-compose.yml up -d --no-deps --build adcm
-
-repg:
-	@printf "$(OK_COLOR)==== Rebuild postgres... ====$(NO_COLOR)\n"
-	@docker-compose -f ./docker-compose.yml down postgres
-	@docker-compose -f ./docker-compose.yml up -d --no-deps --build postgres
-
-ps:
-	@printf "$(BLUE)==== View configuration ${name}... ====$(NO_COLOR)\n"
-	@docker-compose -f ./docker-compose.yml ps
-
-clean: down
-	@printf "$(ERROR_COLOR)==== Cleaning configuration ${name}... ====$(NO_COLOR)\n"
-	@docker system prune --all --force
-
-fclean:
-	@printf "$(ERROR_COLOR)==== Total clean of all configurations docker ====$(NO_COLOR)\n"
-	@yes | docker system prune -a
-	# Uncommit if necessary:
-	# @docker stop $$(docker ps -qa)
-	# @docker system prune --all --force --volumes
-	# @docker network prune --force
-	# @docker volume prune --force
-
-.PHONY	: all help build down dump logs re refl repa reps ps clean fclean
+timer:
+	@bash scripts/create_timer.sh
