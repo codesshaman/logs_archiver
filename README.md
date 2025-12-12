@@ -112,3 +112,93 @@ make timer
 Вводим желаемое время запуска. Далее таймер создаётся автоматически.
 
 При доступе к root-правам по паролю необходимо так же ввести пароль пользователя.
+
+### Дополнительные установки
+
+Если необходим ещё один экземпляр сервиса, необходимо поменять в ``.env`` в первую очередь постфикс (без нового постфикса сломается старая установка!), а так же все другие необходимые пременные - 
+
+### Проверка установки
+
+По пути
+
+```
+ll /usr/local/lib/
+```
+
+Должна появиться директория ``logs_archiver_<постфикс>``.
+
+Проверка лаунчера (на примере постфикса prod и логов airflow):
+
+```
+cat /usr/local/lib/logs_archiver_prod/launcher.sh
+```
+
+Вывод:
+
+```
+#!/bin/bash
+
+/usr/local/lib/logs_archiver_prod/01_get_global_list.sh /home/user/airflow/logs | /usr/local/lib/logs_archiver_prod/02_send_dirs_to_remover.sh
+```
+
+Проверка демона:
+
+```
+cat /etc/systemd/system/logs_archiver_prod.service
+```
+
+Вывод:
+
+```
+[Unit]
+Description=Token Update Service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/lib/logs_archiver_prod/launcher.sh
+StandardOutput=file:/usr/local/lib/logs_archiver_prod/logfile.log
+StandardError=file:/usr/local/lib/logs_archiver_prod/logfile.log
+Group=yarogor
+User=yarogor
+Restart=on-failure
+
+[Install]
+```
+
+Проверка работы таймера:
+
+```
+cat /etc/systemd/system/logs_archiver_prod.timer
+```
+
+Вывод:
+
+```
+● logs_archiver_prod.timer - Run English Bot Service Daily
+     Loaded: loaded (/etc/systemd/system/logs_archiver_prod.timer; enabled; preset: enabled)
+     Active: active (waiting) since Fri 2025-12-12 14:58:38 MSK; 20ms ago
+ Invocation: bd6db8a123a142239eb911202fb7ff3c
+    Trigger: Fri 2025-12-12 15:00:00 MSK; 1min 21s left
+   Triggers: ● logs_archiver_prod.service
+```
+
+Проверка работы сервиса:
+
+```
+sudo systemctl status logs_archiver_prod
+```
+
+Вывод:
+
+```
+● logs_archiver_prod.service - Token Update Service
+     Loaded: loaded (/etc/systemd/system/logs_archiver_prod.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2025-12-12 14:41:09 MSK; 59ms ago
+ Invocation: 45a77fd85d224a6bb76bd83e5dc639fd
+   Main PID: 197619 ((ncher.sh))
+      Tasks: 1 (limit: 76743)
+     Memory: 1.5M (peak: 1.8M)
+        CPU: 7ms
+     CGroup: /system.slice/logs_archiver_prod.service
+             └─197619 "(ncher.sh)"
+```
