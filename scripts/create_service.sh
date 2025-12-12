@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source .env
+
 # Сохраняем текущую директорию в переменную
 CURRENT_DIR=$(pwd)
 
@@ -7,7 +9,7 @@ CURRENT_DIR=$(pwd)
 CURRENT_USER=$(whoami)
 
 # Путь к файлу
-SERVICE_PATH="/etc/systemd/system/logs_archiver.service"
+SERVICE_PATH="/etc/systemd/system/logs_archiver_$SERVICE_POSTFIX.service"
 
 # Проверяем, существует ли файл
 if [ -f "$SERVICE_PATH" ]; then
@@ -21,9 +23,9 @@ Description=Token Update Service
 After=network.target
 
 [Service]
-ExecStart=$CURRENT_DIR/.venv/bin/python3 $CURRENT_DIR/schedule_message.py
-StandardOutput=file:$CURRENT_DIR/logfile.log
-StandardError=file:$CURRENT_DIR/logfile.log
+ExecStart=/usr/local/lib/logs_archiver_$SERVICE_POSTFIX/launcher.sh
+StandardOutput=file:/usr/local/lib/logs_archiver_$SERVICE_POSTFIX/logfile.log
+StandardError=file:/usr/local/lib/logs_archiver_$SERVICE_POSTFIX/logfile.log
 Group=$CURRENT_USER
 User=$CURRENT_USER
 Restart=on-failure
@@ -44,8 +46,12 @@ WantedBy=multi-user.target"
 
     # Перезапускаем systemd для применения изменений
     sudo systemctl daemon-reload
-    sudo systemctl enable logs_archiver.service
-    sudo systemctl start logs_archiver.service
-    sudo systemctl status logs_archiver.service
+    sudo systemctl enable logs_archiver_$SERVICE_POSTFIX.service
+    sudo systemctl start logs_archiver_$SERVICE_POSTFIX.service
+    sudo systemctl status logs_archiver_$SERVICE_POSTFIX.service
     echo "Systemd перезагружен."
 fi
+
+sudo mkdir /usr/local/lib/logs_archiver_$SERVICE_POSTFIX
+sudo cp -rf ./scripts/* /usr/local/lib/logs_archiver_$SERVICE_POSTFIX
+sudo cp .env /usr/local/lib/logs_archiver_$SERVICE_POSTFIX

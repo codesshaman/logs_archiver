@@ -13,11 +13,15 @@ PURPLE='\e[1;35m'       # Purple
 CYAN='\e[1;36m'         # Cyan
 WHITE='\e[1;37m'        # White
 UCYAN='\e[4;36m'        # Cyan
+ifneq (,$(wildcard .env))
+    include .env
+    export $(shell sed 's/=.*//' .env)
+endif
 USER_ID = $(shell id -u)
 
 all:
 	@printf "Launch configuration ${name}...\n"
-	@./scripts/01_get_global_list.sh ./test_dir/ | ./scripts/02_send_dirs_to_remover.sh
+	@./scripts/01_get_global_list.sh ${FOLDER_PATH} | ./scripts/02_send_dirs_to_remover.sh
 
 env:
 	@printf "$(ERROR_COLOR)==== Create environment file for ${name}... ====$(NO_COLOR)\n"

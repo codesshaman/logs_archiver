@@ -16,7 +16,7 @@ if [ $# -ne 3 ]; then
 fi
 
 if ! [[ "$keep_plain" =~ ^[0-9]+$ ]] || [ "$keep_plain" -le 0 ] || \
-   ! [[ "$keep_archived" =~ ^[0-9]+$ ]] || [ "$keep_archived" -le 0 ]; then
+   ! [[ "$keep_archived" =~ ^[0-9]+$ ]] || [ "$keep_archived" -le -1 ]; then
     echo "Ошибка: аргументы 2 и 3 — положительные числа"
     exit 1
 fi

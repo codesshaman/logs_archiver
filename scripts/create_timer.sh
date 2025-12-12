@@ -3,8 +3,10 @@
 echo "Launch time:"
 read TIME
 
+source .env
+
 # Путь к файлу
-SERVICE_PATH="/etc/systemd/system/logs_archiver.timer"
+SERVICE_PATH="/etc/systemd/system/logs_archiver_$SERVICE_POSTFIX.timer"
 
 # Проверяем, существует ли файл
 if [ -f "$SERVICE_PATH" ]; then
@@ -32,8 +34,8 @@ WantedBy=timers.target"
 
     # Перезапускаем systemd для применения изменений
     sudo systemctl daemon-reload
-    sudo systemctl enable logs_archiver.timer
-    sudo systemctl start logs_archiver.timer
-    sudo systemctl status logs_archiver.timer
+    sudo systemctl enable logs_archiver_$SERVICE_POSTFIX.timer
+    sudo systemctl start logs_archiver_$SERVICE_POSTFIX.timer
+    sudo systemctl status logs_archiver_$SERVICE_POSTFIX.timer
     echo "Systemd перезагружен."
 fi
