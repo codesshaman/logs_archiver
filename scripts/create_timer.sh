@@ -19,7 +19,7 @@ else
 Description=Run English Bot Service Daily
 
 [Timer]
-OnCalendar=*-*-* $TIME:00:00
+OnCalendar=*-*-* $TIME:00
 Persistent=true
 
 [Install]
