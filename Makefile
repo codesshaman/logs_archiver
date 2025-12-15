@@ -45,3 +45,6 @@ service:
 
 timer:
 	@bash scripts/create_timer.sh
+
+clean:
+	@bash scripts/cleaner.sh

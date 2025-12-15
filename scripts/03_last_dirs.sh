@@ -3,15 +3,15 @@
 # Пример: ./scripts/script.sh ./test_dir/dag1 3 3
 # Оставит 3 самых новых как есть + 3 следующих по новизне заархивирует, остальное удалит
 
-source .env
+source $4
 
 dir="$1"
 keep_plain="$2"   # сколько самых новых оставить как есть
 keep_archived="$3" # сколько следующих по новизне заархивировать
 
-if [ $# -ne 3 ]; then
-    echo "Использование: $0 <каталог> <N_обычно> <N_в_архив>"
-    echo "Пример: $0 ./test_dir/dag1 3 3"
+if [ $# -lt 3 ] || [ $# -gt 4 ]; then
+    echo "Использование: $0 <каталог> <N_обычно> <N_в_архив> </path/to/.env>"
+    echo "Пример: $0 ./test_dir/dag1 3 3 /var/lib/script/.env"
     exit 1
 fi
 
@@ -22,11 +22,16 @@ if ! [[ "$keep_plain" =~ ^[0-9]+$ ]] || [ "$keep_plain" -le 0 ] || \
 fi
 
 # Формируем список (самые старые — в начале, самые новые — в конце)
-KEEP_LIST=$(ls "$dir" \
-    | grep -E "$GREP_REGEXP" \
-    | sed -E "$SED1_REGEXP" \
-    | sort -r \
-    | sed -E "$SED2_REGEXP")
+mapfile -t -d '' raw_items < <(
+    find "$dir" -mindepth 1 -maxdepth 1 -type d -printf '%f\0' \
+    | grep -zE "$GREP_REGEXP" \
+    | sed -zE "$SED1_REGEXP" \
+    | sort -rzV \
+    | sed -zE "$SED2_REGEXP"
+)
+
+printf -v KEEP_LIST '%s\n' "${raw_items[@]}"
+KEEP_LIST=${KEEP_LIST%$'\n'}
 
 mapfile -t items <<< "$KEEP_LIST"
 

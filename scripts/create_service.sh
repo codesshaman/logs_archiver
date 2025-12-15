@@ -23,6 +23,7 @@ Description=Token Update Service
 After=network.target
 
 [Service]
+Type=oneshot
 ExecStart=/usr/local/lib/logs_archiver_$SERVICE_POSTFIX/launcher.sh
 StandardOutput=file:/usr/local/lib/logs_archiver_$SERVICE_POSTFIX/logfile.log
 StandardError=file:/usr/local/lib/logs_archiver_$SERVICE_POSTFIX/logfile.log
@@ -35,7 +36,7 @@ WantedBy=multi-user.target"
 
     # Создаём файл под sudo и записываем содержимое
     echo "$SERVICE_CONTENT" | sudo tee "$SERVICE_PATH" > /dev/null
-    
+
     # Устанавливаем корректные права доступа
     sudo chmod 644 "$SERVICE_PATH"
     echo "Файл $SERVICE_PATH успешно создан."
@@ -47,17 +48,30 @@ WantedBy=multi-user.target"
     # Доставляем все скрипты
 SCRIPTS_PATH=/usr/local/lib/logs_archiver_$SERVICE_POSTFIX
     sudo mkdir $SCRIPTS_PATH
-    sudo cp -rf ./scripts/* $SCRIPTS_PATH
+    sudo mkdir $SCRIPTS_PATH/scripts
+    sudo cp -rf ./scripts/* $SCRIPTS_PATH/scripts
     sudo cp .env $SCRIPTS_PATH
 
     # Создаём файл для запуска
-LAUNCHER_CONTENT="#!/bin/bash
+sudo tee "$SCRIPTS_PATH/launcher.sh" > /dev/null <<EOF
+#!/bin/bash
 
-/usr/local/lib/logs_archiver_$SERVICE_POSTFIX/01_get_global_list.sh ${FOLDER_PATH} \
-| /usr/local/lib/logs_archiver_$SERVICE_POSTFIX/02_send_dirs_to_remover.sh
-"
+/usr/local/lib/logs_archiver_$SERVICE_POSTFIX/scripts/01_get_global_list.sh $FOLDER_PATH \
+| /usr/local/lib/logs_archiver_$SERVICE_POSTFIX/scripts/02_send_dirs_to_remover.sh
+EOF
 
-    echo "$LAUNCHER_CONTENT" | sudo tee "$SCRIPTS_PATH/launcher.sh" > /dev/null
+sudo tee "$SCRIPTS_PATH/scripts/02_send_dirs_to_remover.sh" > /dev/null <<EOF
+#!/usr/bin/env bash
+
+source $SCRIPTS_PATH/.env
+
+while IFS= read -r dir; do
+    echo "=== Обрабатываю "\$dir" ==="
+    $SCRIPTS_PATH/scripts/03_last_dirs.sh "\$dir" $NUM_LAST_DIRS $NUM_LAST_ARCS $SCRIPTS_PATH/.env
+    echo
+done
+EOF
+
     sudo chmod +x /usr/local/lib/logs_archiver_prod/*.sh
 
     # Перезапускаем systemd для применения изменений
