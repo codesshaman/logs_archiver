@@ -72,7 +72,7 @@ while IFS= read -r dir; do
 done
 EOF
 
-    sudo chmod +x /usr/local/lib/logs_archiver_prod/*.sh
+    sudo chmod +x /usr/local/lib/logs_archiver_$SERVICE_POSTFIX/*.sh
 
     # Перезапускаем systemd для применения изменений
     sudo systemctl daemon-reload
