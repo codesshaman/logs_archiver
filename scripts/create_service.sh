@@ -57,7 +57,7 @@ sudo tee "$SCRIPTS_PATH/launcher.sh" > /dev/null << EOF
 | /usr/local/lib/logs_archiver_$SERVICE_POSTFIX/02_send_dirs_to_remover.sh
 EOF
 
-   sudo chmod +x /usr/local/lib/logs_archiver_prod/*.sh
+   sudo chmod +x /usr/local/lib/logs_archiver_$SERVICE_POSTFIX/*.sh
 
     # Перезапускаем systemd для применения изменений
     sudo systemctl daemon-reload

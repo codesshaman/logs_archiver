@@ -32,7 +32,6 @@ env:
 		echo "$(GREEN).env file successfully created!$(NO_COLOR)"; \
 	fi
 
-
 git:
 	@printf "$(YELLOW)==== Set user name and email to git for ${name} repo... ====$(NO_COLOR)\n"
 	@bash scripts/gituser.sh
