@@ -23,7 +23,7 @@ Description=Token Update Service
 After=network.target
 
 [Service]
-ExecStart=/usr/local/lib/logs_archiver_$SERVICE_POSTFIX/launcher.sh
+ExecStart=/bin/bash /usr/local/lib/logs_archiver_$SERVICE_POSTFIX/launcher.sh
 StandardOutput=file:/usr/local/lib/logs_archiver_$SERVICE_POSTFIX/logfile.log
 StandardError=file:/usr/local/lib/logs_archiver_$SERVICE_POSTFIX/logfile.log
 Group=$CURRENT_USER
@@ -51,14 +51,13 @@ SCRIPTS_PATH=/usr/local/lib/logs_archiver_$SERVICE_POSTFIX
     sudo cp .env $SCRIPTS_PATH
 
     # Создаём файл для запуска
-LAUNCHER_CONTENT="#!/bin/bash
-
-/usr/local/lib/logs_archiver_$SERVICE_POSTFIX/01_get_global_list.sh ${FOLDER_PATH} \
+sudo tee "$SCRIPTS_PATH/launcher.sh" > /dev/null << EOF
+#!/bin/bash
+/usr/local/lib/logs_archiver_$SERVICE_POSTFIX/01_get_global_list.sh $FOLDER_PATH \
 | /usr/local/lib/logs_archiver_$SERVICE_POSTFIX/02_send_dirs_to_remover.sh
-"
+EOF
 
-    echo "$LAUNCHER_CONTENT" | sudo tee "$SCRIPTS_PATH/launcher.sh" > /dev/null
-    sudo chmod +x /usr/local/lib/logs_archiver_prod/*.sh
+   sudo chmod +x /usr/local/lib/logs_archiver_prod/*.sh
 
     # Перезапускаем systemd для применения изменений
     sudo systemctl daemon-reload
