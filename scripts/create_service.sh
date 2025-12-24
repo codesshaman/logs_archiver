@@ -56,7 +56,7 @@ SCRIPTS_PATH=/usr/local/lib/logs_archiver_$SERVICE_POSTFIX
 sudo tee "$SCRIPTS_PATH/launcher.sh" > /dev/null <<EOF
 #!/bin/bash
 
-/usr/local/lib/logs_archiver_$SERVICE_POSTFIX/scripts/01_get_global_list.sh $FOLDER_PATH \
+/usr/local/lib/logs_archiver_$SERVICE_POSTFIX/scripts/01_get_global_list.sh "$FOLDER_PATH" \
 | /usr/local/lib/logs_archiver_$SERVICE_POSTFIX/scripts/02_send_dirs_to_remover.sh
 EOF
 
